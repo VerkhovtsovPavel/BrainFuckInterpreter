@@ -1,30 +1,15 @@
+package brainfuck
+
+import scala.collection.mutable
 import scala.io.StdIn.readChar
 
-object BrainFuckUtil {
-
-
-  private class BiDirectedStringCursor(val string: String) extends {
-    var position = 0
-
-    def hasNext: Boolean = string.length > position
-
-    def hasPrevious: Boolean = position != 0
-
-    def next() {
-      position += 1
-    }
-
-    def previous() {
-      position -= 1
-    }
-
-    def current = string(position)
-  }
+object BrainFuckInterpreter {
 
   def eval(code: String): Unit = {
     var index: Int = 0
     val array: Array[Int] = new Array[Int](3000)
     val source = new BiDirectedStringCursor(code)
+    checkSyntax(source)
     while (source.hasNext) {
       source.current match {
         case '+' => array(index) += 1
@@ -65,7 +50,24 @@ object BrainFuckUtil {
     }
   }
 
-  implicit class BrainFuckInterpreter(val sc: StringContext) extends AnyVal {
+  private def checkSyntax(source: BiDirectedStringCursor): Unit = {
+    val blockStack = new mutable.Stack[Char]()
+    while (source.hasNext) {
+      source.current match {
+        case '[' => blockStack.push('[')
+        case ']' if blockStack.top != '[' => throw BrainFuckSyntaxException("Uncorrected block sequence")
+        case ']' if blockStack.isEmpty => throw BrainFuckSyntaxException("Uncorrected block sequence")
+        case ']' => blockStack.pop()
+        case _ =>
+      }
+      source.next()
+    }
+    if (blockStack.nonEmpty)
+      throw BrainFuckSyntaxException("Uncorrected block sequence")
+    source.reset()
+  }
+
+  implicit class BrainFuckInterpreterStringInterpolator(val sc: StringContext) extends AnyVal {
     def bf(codeBlocks: String*): Unit = {
       val strings = sc.parts.iterator
       val expressions = codeBlocks.iterator
@@ -73,9 +75,7 @@ object BrainFuckUtil {
       while (strings.hasNext) {
         buf.append(expressions.next).append(strings.next)
       }
-
       eval(buf.toString)
     }
   }
-
 }
