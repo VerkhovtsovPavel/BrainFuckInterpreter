@@ -1,4 +1,4 @@
-package brainfuck
+package brainfuck.interpteter
 
 class BiDirectedStringCursor(val string: String) extends {
 

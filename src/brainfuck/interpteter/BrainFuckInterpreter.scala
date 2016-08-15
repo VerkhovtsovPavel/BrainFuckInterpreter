@@ -1,4 +1,4 @@
-package brainfuck
+package brainfuck.interpteter
 
 import scala.collection.mutable
 import scala.io.StdIn.readChar
