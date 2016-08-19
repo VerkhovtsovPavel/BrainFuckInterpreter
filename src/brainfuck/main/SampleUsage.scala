@@ -11,4 +11,6 @@ object SampleUsage {
   bf"++++++++++$block>++.>+.+++++++..+++.>++.<<+++++++++++++++.>.+++.------.--------.>+.>."
 
   eval(Source.fromFile("./sample/helloWorld1.b").mkString)
+
+  compileTimeChecking.CompileTimeSyntaxChecking.checkSyntax("++++++++++>++.>+.+++++++..+++.>++.<<+++++++++++++++.>.+++.------.--------.>+.>.");
 }
