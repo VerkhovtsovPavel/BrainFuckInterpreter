@@ -7,27 +7,33 @@ object CompileTimeSyntaxChecking {
   def checkSyntaxImpl(c: blackbox.Context)(code : c.Expr[String]) : c.Tree = {
     import c.universe._
 
-    if(!_checkSyntax(code.tree.toString()))
-      c.abort(c.enclosingPosition, "Syntax error in bf code")
+     val res = _checkSyntax(code.tree.toString()) 
+
+    if(res.nonEmpty)
+      c.abort(c.enclosingPosition, "Syntax error in bf code : " + res)
     else
       code.tree
   }
 
-  private def _checkSyntax(code: String): Boolean = {
+  private def _checkSyntax(code: String): String = {
+
     val source = code.iterator
     val blockStack = new scala.collection.mutable.Stack[Char]()
-    var result : Boolean = true
+    var result : String = ""
     while (source.hasNext) {
       source.next() match {
         case '[' => blockStack.push('[')
-        case ']' if blockStack.isEmpty => result &= false
-        case ']' if blockStack.top != '[' => result &= false
+        case ']' if blockStack.isEmpty | blockStack.top != '[' => result = "Unvalid block sequеnce ']' before '['"
         case ']' => blockStack.pop()
         case _ =>
       }
     }
-    if (blockStack.nonEmpty || code.replaceAll("""[\+\-\[\<\>\.\]\,]""","").length > 0)
-      result &= false
+    if (blockStack.nonEmpty)
+      result = "Unvalid block sequеnce ']' before '['"
+
+    val invalidSymbols = code.replaceAll("""[\+\-\[\<\>\.\]\,\"]""","")
+    if (invalidSymbols.nonEmpty)
+      result = "Unvalid symbols "+invalidSymbols
 
     result
   }
